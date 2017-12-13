@@ -1,0 +1,124 @@
+# 
+# Matlab link control file
+#
+
+target matlab
+
+#
+# Matlab working directory
+# The workdir is automatically created if it doesn't exist
+# If omitted, the current working directory is used
+#
+
+
+#
+# Matlab window disposition (hide, show, keep)
+# Default is 'hide'
+#
+window hide
+
+#
+# Matlab output buffer size for verbose output
+# If omitted, output is not displayed when verbose is enabled
+#
+output 65536
+
+workdir files/
+
+#
+# Matlab command on init
+#   ans is GLD_OK when init succeeds
+#   ans is GLD_ERROR when init fails
+#
+on_init load_level = 0; n = 0; ans=GLD_OK; # load_level = [0:low; 1:high]
+
+# Matlab command on sync
+#   ans is timestamp of next needed sync event
+#   ans is TS_NEVER if no sync event needed
+#   ans is TS_ERROR if an error occurred
+#
+on_sync if agg_load < 35 load_level = 0; else load_level = 1; end; if load_level == 0 n = 0; else n = n + 1; end; [battery_load1] = battery_control_rc_fb_h(demand_load1, soc1, load_level, n, 4); [battery_load2] = battery_control_rc_fb_h(demand_load2, soc2, load_level, n, 4); [battery_load3] = battery_control_rc_fb_h(demand_load3, soc3, load_level, n, 3); [battery_load4] = battery_control_rc_fb_h(demand_load4, soc4, load_level, n, 3); [battery_load5] = battery_control_rc_fb_h(demand_load5, soc5, load_level, n, 4); [battery_load6] = battery_control_rc_fb_h(demand_load6, soc6, load_level, n, 5); [battery_load7] = battery_control_rc_fb_h(demand_load7, soc7, load_level, n, 3); [battery_load8] = battery_control_rc_fb_h(demand_load8, soc8, load_level, n, 4); [battery_load9] = battery_control_rc_fb_h(demand_load9, soc9, load_level, n, 5); [battery_load10] = battery_control_rc_fb_h(demand_load10, soc10, load_level, n, 5); ans=TS_NEVER;
+
+# Matlab command on term
+#   ans is GLD_OK when term succeeds
+#   ans is GLD_ERROR when term fails
+on_term ans=GLD_OK;
+
+# Matlab root variable name for published data
+# Default is 'gridlabd'
+
+
+# Global variables to publish (readonly)
+# Default is all globals
+# Listing "global" all by itself once will cause no globals to be published
+global clock
+
+# Objects to publish (readonly)
+# Default is all objects
+# Listing "object" all by itself once will cause no objects to be published
+
+# Variables to import from matlab to gridlabd and to export from gridlabd to Matlab workspace (by name)
+# Default is none are imported or exported
+
+# Feedback Variables
+export CollMeter.measured_real_power agg_load
+
+# First Battery
+export DMeter1.measured_real_power demand_load1
+export Inv1.battery_soc soc1
+import Inv1.P_Out battery_load1
+import Inv1.rated_power rated_power1
+
+# Second Battery
+export DMeter2.measured_real_power demand_load2
+export Inv2.battery_soc soc2
+import Inv2.P_Out battery_load2
+import Inv2.rated_power rated_power2
+
+# Third Battery
+export DMeter3.measured_real_power demand_load3
+export Inv3.battery_soc soc3
+import Inv3.P_Out battery_load3
+import Inv3.rated_power rated_power3
+
+# Fourth Battery
+export DMeter4.measured_real_power demand_load4
+export Inv4.battery_soc soc4
+import Inv4.P_Out battery_load4
+import Inv4.rated_power rated_power4
+
+# Fifth Battery
+export DMeter5.measured_real_power demand_load5
+export Inv5.battery_soc soc5
+import Inv5.P_Out battery_load5
+import Inv5.rated_power rated_power5
+
+# Sixth Battery
+export DMeter6.measured_real_power demand_load6
+export Inv6.battery_soc soc6
+import Inv6.P_Out battery_load6
+import Inv6.rated_power rated_power6
+
+# Seventh Battery
+export DMeter7.measured_real_power demand_load7
+export Inv7.battery_soc soc7
+import Inv7.P_Out battery_load7
+import Inv7.rated_power rated_power7
+
+# Eighth Battery
+export DMeter8.measured_real_power demand_load8
+export Inv8.battery_soc soc8
+import Inv8.P_Out battery_load8
+import Inv8.rated_power rated_power8
+
+# Nineth Battery
+export DMeter9.measured_real_power demand_load9
+export Inv9.battery_soc soc9
+import Inv9.P_Out battery_load9
+import Inv9.rated_power rated_power9
+
+# Tenth Battery
+export DMeter10.measured_real_power demand_load10
+export Inv10.battery_soc soc10
+import Inv10.P_Out battery_load10
+import Inv10.rated_power rated_power10
