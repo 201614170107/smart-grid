@@ -1,0 +1,906 @@
+//This is with feedback 
+
+// Linking MATLAB fro battery control
+link "files/CustomizedBatterySize/RC_FB_10H/basic_battery_control_feedback1-10_tcp.link";
+//link "files/basic_battery_control_feedback12-22.link";
+
+clock {
+	timezone PST+8PDT;
+	starttime '2016-01-01 00:00:00';
+	//stoptime '2016-02-01 00:00:00';
+	stoptime '2016-06-01 00:00:00';
+}
+
+module powerflow;
+module residential;
+module tape;
+module generators;
+
+object triplex_meter {
+	name CollMeter;
+	phases AS;
+	nominal_voltage 120V;
+	object recorder {
+		property measured_real_power; //real_energy;
+		file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/net_demand_fb.csv;
+		interval 60;
+	};
+}
+
+// Connection to First house
+object triplex_meter { // Total house load
+	name TMeter1;
+	parent CollMeter;
+	nominal_voltage 120V;
+	phases AS;
+	object recorder {
+		property measured_real_power; //real_energy;
+		file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/net_load/net_house_demand_1.csv;
+		interval 60;
+	};
+}
+
+object triplex_meter { // Only house devices
+	name DMeter1;
+	parent TMeter1;
+	phases AS;
+	nominal_voltage 120V;
+	object recorder {
+		property measured_real_power; //real_energy;
+		file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/demand_load/devices_demand_1.csv;
+		interval 60;
+	};
+}
+
+object inverter {
+	name Load1;
+	parent DMeter1;
+	phases AS;
+    generator_status ONLINE;
+    inverter_type FOUR_QUADRANT;
+    four_quadrant_control_mode CONSTANT_PQ;
+	//rated_power 3000.0;		//Per phase rating
+    inverter_efficiency 1;
+    //Q_Out 0;
+    object player {
+    	property P_Out;
+    	file files/meter_data/apartment/2016/Apt1_2016.csv;
+    };
+}
+
+// Battery
+object triplex_meter { // Only Battery load
+	name BMeter1;
+	parent TMeter1;
+	phases AS;
+	nominal_voltage 120V;
+	//object recorder {
+	//	property measured_real_power; //real_energy;
+	//	file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/battery_load/battery_load_2.csv;
+	//	interval 60;
+	//};
+}
+
+object inverter {
+	name Inv1;
+	parent BMeter1;
+	phases AS;
+	sense_object DMeter1;
+    generator_status ONLINE;
+    inverter_type FOUR_QUADRANT;
+    four_quadrant_control_mode CONSTANT_PQ;
+	//rated_power 3000.0;		//Per phase rating
+    inverter_efficiency 1;
+    P_Out 10 kW;
+    Q_Out 0;
+}
+
+object battery {
+	name Battery1;
+	parent Inv1;
+	use_internal_battery_model TRUE;
+	battery_type LI_ION;
+	////rated_power 3 kW;
+	nominal_voltage 120;
+	battery_capacity 15 kWh;
+	round_trip_efficiency 0.9;
+	state_of_charge 0.6;
+	generator_mode SUPPLY_DRIVEN;
+
+	object recorder {
+		property state_of_charge, battery_state, battery_load; 
+		file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/battery_load/battery_info_1_fb.csv;
+		interval 60;
+	};
+}
+
+
+// Connection to Second house
+object triplex_meter { // Total house load
+	name TMeter2;
+	parent CollMeter;
+	nominal_voltage 120V;
+	phases AS;
+	object recorder {
+		property measured_real_power; //real_energy;
+		file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/net_load/net_house_demand_2.csv;
+		interval 60;
+	};
+}
+
+object triplex_meter { // Only house devices
+	name DMeter2;
+	parent TMeter2;
+	phases AS;
+	nominal_voltage 120V;
+	object recorder {
+		property measured_real_power; //real_energy;
+		file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/demand_load/devices_demand_2.csv;
+		interval 60;
+	};
+}
+
+object inverter {
+	name Load2;
+	parent DMeter2;
+	phases AS;
+    generator_status ONLINE;
+    inverter_type FOUR_QUADRANT;
+    four_quadrant_control_mode CONSTANT_PQ;
+	//rated_power 3000.0;		//Per phase rating
+    inverter_efficiency 1;
+    //Q_Out 0;
+    object player {
+    	property P_Out;
+    	file files/meter_data/apartment/2016/Apt2_2016.csv;
+    };
+}
+
+// Battery
+object triplex_meter { // Only Battery load
+	name BMeter2;
+	parent TMeter2;
+	phases AS;
+	nominal_voltage 120V;
+	//object recorder {
+	//	property measured_real_power; //real_energy;
+	//	file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/battery_load/battery_load_2.csv;
+	//	interval 60;
+	//};
+}
+
+object inverter {
+	name Inv2;
+	parent BMeter2;
+	phases AS;
+	sense_object DMeter2;
+    generator_status ONLINE;
+    inverter_type FOUR_QUADRANT;
+    four_quadrant_control_mode CONSTANT_PQ;
+	//rated_power 3000.0;		//Per phase rating
+    inverter_efficiency 1;
+    P_Out 10 kW;
+    Q_Out 0;
+}
+
+object battery {
+	name Battery2;
+	parent Inv2;
+	use_internal_battery_model TRUE;
+	battery_type LI_ION;
+	//rated_power 3 kW;
+	nominal_voltage 120;
+	battery_capacity 14 kWh;
+	round_trip_efficiency 0.9;
+	state_of_charge 0.6;
+	generator_mode SUPPLY_DRIVEN;
+
+	object recorder {
+		property state_of_charge, battery_state, battery_load; 
+		file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/battery_load/battery_info_2_fb.csv;
+		interval 60;
+	};
+}
+
+
+// Connection to Third house
+object triplex_meter { // Total house load
+	name TMeter3;
+	parent CollMeter;
+	nominal_voltage 120V;
+	phases AS;
+	object recorder {
+		property measured_real_power; //real_energy;
+		file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/net_load/net_house_demand_3.csv;
+		interval 60;
+	};
+}
+
+object triplex_meter { // Only house devices
+	name DMeter3;
+	parent TMeter3;
+	phases AS;
+	nominal_voltage 120V;
+	object recorder {
+		property measured_real_power; //real_energy;
+		file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/demand_load/devices_demand_3.csv;
+		interval 60;
+	};
+}
+
+object inverter {
+	name Load3;
+	parent DMeter3;
+	phases AS;
+    generator_status ONLINE;
+    inverter_type FOUR_QUADRANT;
+    four_quadrant_control_mode CONSTANT_PQ;
+	//rated_power 3000.0;		//Per phase rating
+    inverter_efficiency 1;
+    //Q_Out 0;
+    object player {
+    	property P_Out;
+    	file files/meter_data/apartment/2016/Apt3_2016.csv;
+    };
+}
+
+// Battery
+object triplex_meter { // Only Battery load
+	name BMeter3;
+	parent TMeter3;
+	phases AS;
+	nominal_voltage 120V;
+	//object recorder {
+	//	property measured_real_power; //real_energy;
+	//	file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/battery_load/battery_load_2.csv;
+	//	interval 60;
+	//};
+}
+
+object inverter {
+	name Inv3;
+	parent BMeter3;
+	phases AS;
+	sense_object DMeter3;
+    generator_status ONLINE;
+    inverter_type FOUR_QUADRANT;
+    four_quadrant_control_mode CONSTANT_PQ;
+	//rated_power 3000.0;		//Per phase rating
+    inverter_efficiency 1;
+    P_Out 10 kW;
+    Q_Out 0;
+}
+
+object battery {
+	name Battery3;
+	parent Inv3;
+	use_internal_battery_model TRUE;
+	battery_type LI_ION;
+	//rated_power 3 kW;
+	nominal_voltage 120;
+	battery_capacity 11 kWh;
+	round_trip_efficiency 0.9;
+	state_of_charge 0.6;
+	generator_mode SUPPLY_DRIVEN;
+
+	object recorder {
+		property state_of_charge, battery_state, battery_load; 
+		file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/battery_load/battery_info_3_fb.csv;
+		interval 60;
+	};
+}
+
+
+// Connection to Fourth house
+object triplex_meter { // Total house load
+	name TMeter4;
+	parent CollMeter;
+	nominal_voltage 120V;
+	phases AS;
+	object recorder {
+		property measured_real_power; //real_energy;
+		file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/net_load/net_house_demand_4.csv;
+		interval 60;
+	};
+}
+
+object triplex_meter { // Only house devices
+	name DMeter4;
+	parent TMeter4;
+	phases AS;
+	nominal_voltage 120V;
+	object recorder {
+		property measured_real_power; //real_energy;
+		file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/demand_load/devices_demand_4.csv;
+		interval 60;
+	};
+}
+
+object inverter {
+	name Load4;
+	parent DMeter4;
+	phases AS;
+    generator_status ONLINE;
+    inverter_type FOUR_QUADRANT;
+    four_quadrant_control_mode CONSTANT_PQ;
+	//rated_power 3000.0;		//Per phase rating
+    inverter_efficiency 1;
+    //Q_Out 0;
+    object player {
+    	property P_Out;
+    	file files/meter_data/apartment/2016/Apt4_2016.csv;
+    };
+}
+
+// Battery
+object triplex_meter { // Only Battery load
+	name BMeter4;
+	parent TMeter4;
+	phases AS;
+	nominal_voltage 120V;
+	//object recorder {
+	//	property measured_real_power; //real_energy;
+	//	file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/battery_load/battery_load_2.csv;
+	//	interval 60;
+	//};
+}
+
+object inverter {
+	name Inv4;
+	parent BMeter4;
+	phases AS;
+	sense_object DMeter4;
+    generator_status ONLINE;
+    inverter_type FOUR_QUADRANT;
+    four_quadrant_control_mode CONSTANT_PQ;
+	//rated_power 3000.0;		//Per phase rating
+    inverter_efficiency 1;
+    P_Out 10 kW;
+    Q_Out 0;
+}
+
+object battery {
+	name Battery4;
+	parent Inv4;
+	use_internal_battery_model TRUE;
+	battery_type LI_ION;
+	//rated_power 3 kW;
+	nominal_voltage 120;
+	battery_capacity 11 kWh;
+	round_trip_efficiency 0.9;
+	state_of_charge 0.6;
+	generator_mode SUPPLY_DRIVEN;
+
+	object recorder {
+		property state_of_charge, battery_state, battery_load; 
+		file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/battery_load/battery_info_4_fb.csv;
+		interval 60;
+	};
+}
+
+
+// Connection to Fifth house
+object triplex_meter { // Total house load
+	name TMeter5;
+	parent CollMeter;
+	nominal_voltage 120V;
+	phases AS;
+	object recorder {
+		property measured_real_power; //real_energy;
+		file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/net_load/net_house_demand_5.csv;
+		interval 60;
+	};
+}
+
+object triplex_meter { // Only house devices
+	name DMeter5;
+	parent TMeter5;
+	phases AS;
+	nominal_voltage 120V;
+	object recorder {
+		property measured_real_power; //real_energy;
+		file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/demand_load/devices_demand_5.csv;
+		interval 60;
+	};
+}
+
+object inverter {
+	name Load5;
+	parent DMeter5;
+	phases AS;
+    generator_status ONLINE;
+    inverter_type FOUR_QUADRANT;
+    four_quadrant_control_mode CONSTANT_PQ;
+	//rated_power 3000.0;		//Per phase rating
+    inverter_efficiency 1;
+    //Q_Out 0;
+    object player {
+    	property P_Out;
+    	file files/meter_data/apartment/2016/Apt5_2016.csv;
+    };
+}
+
+// Battery
+object triplex_meter { // Only Battery load
+	name BMeter5;
+	parent TMeter5;
+	phases AS;
+	nominal_voltage 120V;
+	//object recorder {
+	//	property measured_real_power; //real_energy;
+	//	file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/battery_load/battery_load_2.csv;
+	//	interval 60;
+	//};
+}
+
+object inverter {
+	name Inv5;
+	parent BMeter5;
+	phases AS;
+	sense_object DMeter5;
+    generator_status ONLINE;
+    inverter_type FOUR_QUADRANT;
+    four_quadrant_control_mode CONSTANT_PQ;
+	//rated_power 3000.0;		//Per phase rating
+    inverter_efficiency 1;
+    P_Out 10 kW;
+    Q_Out 0;
+}
+
+object battery {
+	name Battery5;
+	parent Inv5;
+	use_internal_battery_model TRUE;
+	battery_type LI_ION;
+	//rated_power 3 kW;
+	nominal_voltage 120;
+	battery_capacity 17 kWh;
+	round_trip_efficiency 0.9;
+	state_of_charge 0.6;
+	generator_mode SUPPLY_DRIVEN;
+
+	object recorder {
+		property state_of_charge, battery_state, battery_load; 
+		file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/battery_load/battery_info_5_fb.csv;
+		interval 60;
+	};
+}
+
+// Connection to Sixth house
+object triplex_meter { // Total house load
+	name TMeter6;
+	parent CollMeter;
+	nominal_voltage 120V;
+	phases AS;
+	object recorder {
+		property measured_real_power; //real_energy;
+		file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/net_load/net_house_demand_6.csv;
+		interval 60;
+	};
+}
+
+object triplex_meter { // Only house devices
+	name DMeter6;
+	parent TMeter6;
+	phases AS;
+	nominal_voltage 120V;
+	object recorder {
+		property measured_real_power; //real_energy;
+		file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/demand_load/devices_demand_6.csv;
+		interval 60;
+	};
+}
+
+object inverter {
+	name Load6;
+	parent DMeter6;
+	phases AS;
+    generator_status ONLINE;
+    inverter_type FOUR_QUADRANT;
+    four_quadrant_control_mode CONSTANT_PQ;
+	//rated_power 3000.0;		//Per phase rating
+    inverter_efficiency 1;
+    //Q_Out 0;
+    object player {
+    	property P_Out;
+    	file files/meter_data/apartment/2016/Apt6_2016.csv;
+    };
+}
+
+// Battery
+object triplex_meter { // Only Battery load
+	name BMeter6;
+	parent TMeter6;
+	phases AS;
+	nominal_voltage 120V;
+	//object recorder {
+	//	property measured_real_power; //real_energy;
+	//	file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/battery_load/battery_load_2.csv;
+	//	interval 60;
+	//};
+}
+
+object inverter {
+	name Inv6;
+	parent BMeter6;
+	phases AS;
+	sense_object DMeter6;
+    generator_status ONLINE;
+    inverter_type FOUR_QUADRANT;
+    four_quadrant_control_mode CONSTANT_PQ;
+	//rated_power 3000.0;		//Per phase rating
+    inverter_efficiency 1;
+    P_Out 10 kW;
+    Q_Out 0;
+}
+
+object battery {
+	name Battery6;
+	parent Inv6;
+	use_internal_battery_model TRUE;
+	battery_type LI_ION;
+	//rated_power 3 kW;
+	nominal_voltage 120;
+	battery_capacity 18 kWh;
+	round_trip_efficiency 0.9;
+	state_of_charge 0.6;
+	generator_mode SUPPLY_DRIVEN;
+
+	object recorder {
+		property state_of_charge, battery_state, battery_load; 
+		file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/battery_load/battery_info_6_fb.csv;
+		interval 60;
+	};
+}
+
+
+// Connection to Seventh house
+object triplex_meter { // Total house load
+	name TMeter7;
+	parent CollMeter;
+	nominal_voltage 120V;
+	phases AS;
+	object recorder {
+		property measured_real_power; //real_energy;
+		file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/net_load/net_house_demand_7.csv;
+		interval 60;
+	};
+}
+
+object triplex_meter { // Only house devices
+	name DMeter7;
+	parent TMeter7;
+	phases AS;
+	nominal_voltage 120V;
+	object recorder {
+		property measured_real_power; //real_energy;
+		file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/demand_load/devices_demand_7.csv;
+		interval 60;
+	};
+}
+
+object inverter {
+	name Load7;
+	parent DMeter7;
+	phases AS;
+    generator_status ONLINE;
+    inverter_type FOUR_QUADRANT;
+    four_quadrant_control_mode CONSTANT_PQ;
+	//rated_power 3000.0;		//Per phase rating
+    inverter_efficiency 1;
+    //Q_Out 0;
+    object player {
+    	property P_Out;
+    	file files/meter_data/apartment/2016/Apt7_2016.csv;
+    };
+}
+
+// Battery
+object triplex_meter { // Only Battery load
+	name BMeter7;
+	parent TMeter7;
+	phases AS;
+	nominal_voltage 120V;
+	//object recorder {
+	//	property measured_real_power; //real_energy;
+	//	file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/battery_load/battery_load_2.csv;
+	//	interval 60;
+	//};
+}
+
+object inverter {
+	name Inv7;
+	parent BMeter7;
+	phases AS;
+	sense_object DMeter7;
+    generator_status ONLINE;
+    inverter_type FOUR_QUADRANT;
+    four_quadrant_control_mode CONSTANT_PQ;
+	//rated_power 3000.0;		//Per phase rating
+    inverter_efficiency 1;
+    P_Out 10 kW;
+    Q_Out 0;
+}
+
+object battery {
+	name Battery7;
+	parent Inv7;
+	use_internal_battery_model TRUE;
+	battery_type LI_ION;
+	//rated_power 3 kW;
+	nominal_voltage 120;
+	battery_capacity 14 kWh;
+	round_trip_efficiency 0.9;
+	state_of_charge 0.6;
+	generator_mode SUPPLY_DRIVEN;
+
+	object recorder {
+		property state_of_charge, battery_state, battery_load; 
+		file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/battery_load/battery_info_7_fb.csv;
+		interval 60;
+	};
+}
+
+
+// Connection to Eighth house
+object triplex_meter { // Total house load
+	name TMeter8;
+	parent CollMeter;
+	nominal_voltage 120V;
+	phases AS;
+	object recorder {
+		property measured_real_power; //real_energy;
+		file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/net_load/net_house_demand_8.csv;
+		interval 60;
+	};
+}
+
+object triplex_meter { // Only house devices
+	name DMeter8;
+	parent TMeter8;
+	phases AS;
+	nominal_voltage 120V;
+	object recorder {
+		property measured_real_power; //real_energy;
+		file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/demand_load/devices_demand_8.csv;
+		interval 60;
+	};
+}
+
+object inverter {
+	name Load8;
+	parent DMeter8;
+	phases AS;
+    generator_status ONLINE;
+    inverter_type FOUR_QUADRANT;
+    four_quadrant_control_mode CONSTANT_PQ;
+	//rated_power 3000.0;		//Per phase rating
+    inverter_efficiency 1;
+    //Q_Out 0;
+    object player {
+    	property P_Out;
+    	file files/meter_data/apartment/2016/Apt8_2016.csv;
+    };
+}
+
+// Battery
+object triplex_meter { // Only Battery load
+	name BMeter8;
+	parent TMeter8;
+	phases AS;
+	nominal_voltage 120V;
+	//object recorder {
+	//	property measured_real_power; //real_energy;
+	//	file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/battery_load/battery_load_2.csv;
+	//	interval 60;
+	//};
+}
+
+object inverter {
+	name Inv8;
+	parent BMeter8;
+	phases AS;
+	sense_object DMeter8;
+    generator_status ONLINE;
+    inverter_type FOUR_QUADRANT;
+    four_quadrant_control_mode CONSTANT_PQ;
+	//rated_power 3000.0;		//Per phase rating
+    inverter_efficiency 1;
+    P_Out 10 kW;
+    Q_Out 0;
+}
+
+object battery {
+	name Battery8;
+	parent Inv8;
+	use_internal_battery_model TRUE;
+	battery_type LI_ION;
+	//rated_power 3 kW;
+	nominal_voltage 120;
+	battery_capacity 30 kWh;
+	round_trip_efficiency 0.9;
+	state_of_charge 0.6;
+	generator_mode SUPPLY_DRIVEN;
+
+	object recorder {
+		property state_of_charge, battery_state, battery_load; 
+		file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/battery_load/battery_info_8_fb.csv;
+		interval 60;
+	};
+}
+
+
+// Connection to Ninth house
+object triplex_meter { // Total house load
+	name TMeter9;
+	parent CollMeter;
+	nominal_voltage 120V;
+	phases AS;
+	object recorder {
+		property measured_real_power; //real_energy;
+		file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/net_load/net_house_demand_9.csv;
+		interval 60;
+	};
+}
+
+object triplex_meter { // Only house devices
+	name DMeter9;
+	parent TMeter9;
+	phases AS;
+	nominal_voltage 120V;
+	object recorder {
+		property measured_real_power; //real_energy;
+		file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/demand_load/devices_demand_9.csv;
+		interval 60;
+	};
+}
+
+object inverter {
+	name Load9;
+	parent DMeter9;
+	phases AS;
+    generator_status ONLINE;
+    inverter_type FOUR_QUADRANT;
+    four_quadrant_control_mode CONSTANT_PQ;
+	//rated_power 3000.0;		//Per phase rating
+    inverter_efficiency 1;
+    //Q_Out 0;
+    object player {
+    	property P_Out;
+    	file files/meter_data/apartment/2016/Apt9_2016.csv;
+    };
+}
+
+// Battery
+object triplex_meter { // Only Battery load
+	name BMeter9;
+	parent TMeter9;
+	phases AS;
+	nominal_voltage 120V;
+	//object recorder {
+	//	property measured_real_power; //real_energy;
+	//	file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/battery_load/battery_load_2.csv;
+	//	interval 60;
+	//};
+}
+
+object inverter {
+	name Inv9;
+	parent BMeter9;
+	phases AS;
+	sense_object DMeter9;
+    generator_status ONLINE;
+    inverter_type FOUR_QUADRANT;
+    four_quadrant_control_mode CONSTANT_PQ;
+	//rated_power 3000.0;		//Per phase rating
+    inverter_efficiency 1;
+    P_Out 10 kW;
+    Q_Out 0;
+}
+
+object battery {
+	name Battery9;
+	parent Inv9;
+	use_internal_battery_model TRUE;
+	battery_type LI_ION;
+	//rated_power 3 kW;
+	nominal_voltage 120;
+	battery_capacity 20 kWh;
+	round_trip_efficiency 0.9;
+	state_of_charge 0.6;
+	generator_mode SUPPLY_DRIVEN;
+
+	object recorder {
+		property state_of_charge, battery_state, battery_load; 
+		file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/battery_load/battery_info_9_fb.csv;
+		interval 60;
+	};
+}
+
+
+// Connection to Tenth house
+object triplex_meter { // Total house load
+	name TMeter10;
+	parent CollMeter;
+	nominal_voltage 120V;
+	phases AS;
+	object recorder {
+		property measured_real_power; //real_energy;
+		file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/net_load/net_house_demand_10.csv;
+		interval 60;
+	};
+}
+
+object triplex_meter { // Only house devices
+	name DMeter10;
+	parent TMeter10;
+	phases AS;
+	nominal_voltage 120V;
+	object recorder {
+		property measured_real_power; //real_energy;
+		file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/demand_load/devices_demand_10.csv;
+		interval 60;
+	};
+}
+
+object inverter {
+	name Load10;
+	parent DMeter10;
+	phases AS;
+    generator_status ONLINE;
+    inverter_type FOUR_QUADRANT;
+    four_quadrant_control_mode CONSTANT_PQ;
+	//rated_power 3000.0;		//Per phase rating
+    inverter_efficiency 1;
+    //Q_Out 0;
+    object player {
+    	property P_Out;
+    	file files/meter_data/apartment/2016/Apt10_2016.csv;
+    };
+}
+
+// Battery
+object triplex_meter { // Only Battery load
+	name BMeter10;
+	parent TMeter10;
+	phases AS;
+	nominal_voltage 120V;
+	//object recorder {
+	//	property measured_real_power; //real_energy;
+	//	file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/battery_load/battery_load_2.csv;
+	//	interval 60;
+	//};
+}
+
+object inverter {
+	name Inv10;
+	parent BMeter10;
+	phases AS;
+	sense_object DMeter10;
+    generator_status ONLINE;
+    inverter_type FOUR_QUADRANT;
+    four_quadrant_control_mode CONSTANT_PQ;
+	//rated_power 3000.0;		//Per phase rating
+    inverter_efficiency 1;
+    P_Out 10 kW;
+    Q_Out 0;
+}
+
+object battery {
+	name Battery10;
+	parent Inv10;
+	use_internal_battery_model TRUE;
+	battery_type LI_ION;
+	//rated_power 3 kW;
+	nominal_voltage 120;
+	battery_capacity 15 kWh;
+	round_trip_efficiency 0.9;
+	state_of_charge 0.6;
+	generator_mode SUPPLY_DRIVEN;
+
+	object recorder {
+		property state_of_charge, battery_state, battery_load; 
+		file files/CustomizedBatterySize/RC_FB_10H/output_tcp_aimd/battery_load/battery_info_10_fb.csv;
+		interval 60;
+	};
+}
